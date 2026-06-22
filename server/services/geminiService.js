@@ -1,15 +1,24 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai")
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+const OpenAI = require("openai")
+
+const client = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY,
+})
 
 async function generate(domain, prompt) {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
-    const fullPrompt = `Tu es un générateur IA expert.
+  const completion = await client.chat.completions.create({
+    model: "meta-llama/llama-3.2-3b-instruct:free",
+    messages: [
+      {
+        role: "user",
+        content: `Tu es un générateur IA expert.
 Domaine: ${domain}
 Demande: ${prompt}
 Génère un résultat complet, professionnel et détaillé.`
-
-    const result = await model.generateContent(fullPrompt)
-    return result.response.text()
+      }
+    ]
+  })
+  return completion.choices[0].message.content
 }
 
 module.exports = { generate }
